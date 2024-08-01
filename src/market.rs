@@ -11,6 +11,7 @@ static API_V3_AVG_PRICE: &str = "/api/v3/avgPrice";
 static API_V3_BOOK_TICKER: &str = "/api/v3/ticker/bookTicker";
 static API_V3_24H_TICKER: &str = "/api/v3/ticker/24hr";
 static API_V3_AGG_TRADES: &str = "/api/v3/aggTrades";
+static API_V3_HISTORY_TRADES: &str = "/api/v3/historicalTrades";
 static API_V3_KLINES: &str = "/api/v3/klines";
 
 #[derive(Clone)]
@@ -155,6 +156,41 @@ impl Market {
     {
         let request = self.symbol_request(symbol);
         self.client.get(API_V3_24H_TICKER, Some(&request)).await
+    }
+
+
+    /// Get historical trades.
+    /// # Examples
+    /// ```rust
+    /// use binance::{api::*, market::*, config::*};
+    /// let conf = Config::default().set_rest_api_endpoint(DATA_REST_ENDPOINT);
+    /// let limit = 10;
+    /// let market: Market = Binance::new_with_env(&conf);
+    /// let agg_trades = tokio_test::block_on(market.get_historical_trades("BNBETH", None, limit));
+    /// assert!(agg_trades.is_ok(), "{:?}", agg_trades);
+    /// assert_eq!(agg_trades.unwrap().len(), limit as usize);
+    /// ```
+    pub async fn get_historical_trades<S1, S2, S3>(
+        &self, 
+        symbol: S1, 
+        from_id: S2, 
+        limit: S3
+    ) -> Result<Vec<Trade>>
+    where
+        S1: AsRef<str>,
+        S2: Into<Option<u64>>,
+        S3: Into<Option<u16>>,
+    {
+        let parameters = IntoIterator::into_iter([
+            Some(("symbol", symbol.as_ref().to_string())),
+            from_id.into().map(|f| ("fromId", f.to_string())),
+            limit.into().map(|l| ("limit", l.to_string())),
+        ])
+        .flatten();
+
+        let request = build_request(parameters);
+
+        self.client.get_p(API_V3_HISTORY_TRADES, Some(&request)).await
     }
 
     /// Get aggregated historical trades.

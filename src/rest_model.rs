@@ -404,6 +404,22 @@ pub struct PriceStats {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Trade {
+    pub id: u64,
+    #[serde(with = "string_or_float")]
+    pub price: f64,
+    #[serde(rename="qty", with = "string_or_float")]
+    pub quantity: f64,
+    #[serde(rename="quoteQty", with = "string_or_float")]
+    pub quote_quantity: f64,
+    pub time: u64,
+    #[serde(rename="isBuyerMaker")]
+    pub is_buyer_maker: bool,
+    #[serde(rename="isBestMatch")]
+    pub is_best_match: bool,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct AggTrade {
     #[serde(rename = "T")]
     pub time: u64,
